@@ -1,6 +1,6 @@
 # SGP Website — Siliguri Government Polytechnic
 
-A full-stack website for Siliguri Government Polytechnic featuring user authentication (signup/login), built with a static frontend and a serverless Node.js backend deployed on **Vercel** with **MongoDB Atlas** as the database.
+A full-stack website for Siliguri Government Polytechnic featuring user authentication (signup/login) and a contact form, built with a static frontend and a serverless Node.js backend deployed on **Vercel** with **MongoDB Atlas** as the database.
 
 ---
 
@@ -24,15 +24,19 @@ A full-stack website for Siliguri Government Polytechnic featuring user authenti
 ```
 SGP-WEBSITE/
 ├── api/
+│   ├── contact.js        # Serverless function: POST /api/contact
 │   ├── login.js          # Serverless function: POST /api/login
 │   └── signup.js         # Serverless function: POST /api/signup
 ├── lib/
-│   ├── mongodb.js        # MongoDB connection utility (cached for serverless)
-│   └── User.js           # Mongoose User model
+│   ├── Contact.js        # Mongoose Contact model
+│   ├── User.js           # Mongoose User model
+│   ├── cors.js           # CORS helper for serverless functions
+│   └── mongodb.js        # MongoDB connection utility (cached for serverless)
 ├── images/               # Static images (logo, banner, about)
 ├── index.html            # Frontend (single page)
 ├── styles.css            # Frontend styles
-├── script.js             # Frontend JavaScript (auth, UI interactions)
+├── script.js             # Frontend JavaScript (auth, contact form, UI)
+├── dev-server.js         # Local development server (serves frontend + API)
 ├── vercel.json           # Vercel build & routing configuration
 ├── package.json          # Dependencies and scripts
 ├── .env.example          # Template for environment variables
@@ -62,7 +66,6 @@ Before you begin, make sure you have:
 - **Node.js** (v18 or higher) — [Download](https://nodejs.org/)
 - **npm** (comes with Node.js)
 - **Git** — [Download](https://git-scm.com/)
-- **Vercel CLI** (optional, for local dev) — Install with: `npm install -g vercel`
 - A **MongoDB Atlas** account (free tier works) — [Sign up](https://www.mongodb.com/cloud/atlas/register)
 - A **Vercel** account (free tier works) — [Sign up](https://vercel.com/signup)
 - A **GitHub** account (to connect your repo to Vercel)
@@ -110,7 +113,7 @@ Follow these steps to create your free cloud database:
 4. Replace `<password>` with the password you set in Step 2.
 5. Add a database name after the `/` (e.g., `sgp-website`):
    ```
-   mongodb+srv://admin:YOUR_PASSWORD@sgp-cluster.abc123.mongodb.net/{name}?retryWrites=true&w=majority
+   mongodb+srv://admin:YOUR_PASSWORD@sgp-cluster.abc123.mongodb.net/sgp-website?retryWrites=true&w=majority
    ```
 
 This is your `MONGODB_URI`.
@@ -136,22 +139,22 @@ cp .env.example .env
 Open `.env` and paste your MongoDB Atlas connection string:
 
 ```
-MONGODB_URI=mongodb+srv://admin:YOUR_PASSWORD@sgp-cluster.abc123.mongodb.net/{name}?retryWrites=true&w=majority
+MONGODB_URI=mongodb+srv://admin:YOUR_PASSWORD@sgp-cluster.abc123.mongodb.net/sgp-website?retryWrites=true&w=majority
 ```
 
-### Step 3: Run Locally with Vercel CLI
+### Step 3: Run the Local Dev Server
 
 ```bash
 npm run dev
 ```
 
-This starts the Vercel dev server (usually at `http://localhost:3000`). It emulates the serverless environment locally, so your API routes at `/api/login` and `/api/signup` will work just like in production.
+This starts the local development server at `http://localhost:3000`. It serves both the frontend and the API endpoints from the same port — no CORS issues.
 
-> **Note:** If you don't have the Vercel CLI installed, run `npm install -g vercel` first. On first run, it may ask you to log in and link a project.
-
-### Alternative: Quick Test Without Vercel CLI
-
-If you just want to verify the database connection works, you can temporarily create a simple test script. But for full functionality (frontend + API together), use `vercel dev`.
+**Available locally:**
+- Frontend: `http://localhost:3000`
+- Signup API: `POST http://localhost:3000/api/signup`
+- Login API: `POST http://localhost:3000/api/login`
+- Contact API: `POST http://localhost:3000/api/contact`
 
 ---
 
@@ -164,7 +167,7 @@ git init
 git add .
 git commit -m "Initial commit: SGP website with MongoDB backend"
 git branch -M main
-git remote add origin https://github.com/YOUR_USERNAME/SGP-WEBSITE.git
+git remote add origin https://github.com/sambitos23/SGP-WEBSITE.git
 git push -u origin main
 ```
 
@@ -177,7 +180,7 @@ git push -u origin main
 
    | Key          | Value                                                                 |
    |--------------|-----------------------------------------------------------------------|
-   | `MONGODB_URI` | `mongodb+srv://admin:YOUR_PASSWORD@sgp-cluster.abc123.mongodb.net/{name}?retryWrites=true&w=majority` |
+   | `MONGODB_URI` | `mongodb+srv://admin:YOUR_PASSWORD@sgp-cluster.abc123.mongodb.net/sgp-website?retryWrites=true&w=majority` |
 
 5. Click **"Deploy"**.
 
@@ -187,7 +190,8 @@ Once deployed, Vercel gives you a URL like `https://sgp-website.vercel.app`. Ope
 
 - The homepage loads with all content and images.
 - Click "Log In / Sign Up" — create an account, then log in.
-- Check MongoDB Atlas → Database → Browse Collections to see the new user document.
+- Submit the contact form — message gets stored in MongoDB.
+- Check MongoDB Atlas → Database → Browse Collections to see the data.
 
 ### Subsequent Deployments
 
@@ -268,6 +272,34 @@ Authenticates an existing user.
 
 ---
 
+### POST `/api/contact`
+
+Stores a contact form submission.
+
+**Request Body:**
+```json
+{
+  "name": "Jane Doe",
+  "email": "jane@example.com",
+  "subject": "Admission Query",
+  "message": "I would like to know about the admission process."
+}
+```
+
+**Success Response (201):**
+```json
+{
+  "success": true,
+  "message": "Message sent successfully! We will get back to you soon."
+}
+```
+
+**Error Responses:**
+- `400` — Missing required fields (name, email, or message)
+- `500` — Server error
+
+---
+
 ## How It Works
 
 ### Architecture
@@ -277,18 +309,21 @@ Browser (index.html + script.js)
     │
     │  fetch('/api/signup', { ... })
     │  fetch('/api/login', { ... })
+    │  fetch('/api/contact', { ... })
     ▼
 Vercel Edge Network
     │
     │  Routes /api/* to serverless functions
     │  Routes everything else to static files
     ▼
-Serverless Function (api/signup.js or api/login.js)
+Serverless Functions (api/signup.js, api/login.js, api/contact.js)
     │
     │  Connects via lib/mongodb.js (cached connection)
-    │  Uses lib/User.js (Mongoose model)
+    │  Uses lib/User.js and lib/Contact.js (Mongoose models)
     ▼
 MongoDB Atlas (cloud database)
+    ├── users collection       (signup/login data)
+    └── contacts collection    (contact form submissions)
 ```
 
 ### Password Security
@@ -305,6 +340,36 @@ Vercel serverless functions are stateless, but they can reuse "warm" containers.
 - Subsequent invocations (on the same warm container): reuses the existing connection.
 
 This avoids the overhead of reconnecting to MongoDB on every single request.
+
+### CORS Handling
+
+The `lib/cors.js` utility sets the appropriate CORS headers and handles preflight `OPTIONS` requests. This ensures the API works correctly both locally and in production.
+
+---
+
+## MongoDB Collections
+
+### `users` Collection
+
+| Field        | Type   | Description                      |
+|--------------|--------|----------------------------------|
+| `name`       | String | User's full name                 |
+| `email`      | String | User's email (unique, lowercase) |
+| `salt`       | String | Random salt for password hashing |
+| `passwordHash` | String | PBKDF2 hashed password         |
+| `createdAt`  | Date   | Account creation timestamp       |
+| `updatedAt`  | Date   | Last update timestamp            |
+
+### `contacts` Collection
+
+| Field     | Type   | Description                     |
+|-----------|--------|---------------------------------|
+| `name`    | String | Sender's full name              |
+| `email`   | String | Sender's email                  |
+| `subject` | String | Message subject (optional)      |
+| `message` | String | Message content                 |
+| `createdAt` | Date | Submission timestamp            |
+| `updatedAt` | Date | Last update timestamp           |
 
 ---
 
@@ -326,6 +391,17 @@ This avoids the overhead of reconnecting to MongoDB on every single request.
 - Go to MongoDB Atlas → Network Access and ensure `0.0.0.0/0` is allowed.
 - This is required because Vercel functions use dynamic IP addresses.
 
+### "querySrv ENOTFOUND" error
+
+- Your connection string has placeholder values. Replace the cluster URL with your actual Atlas cluster hostname.
+- The correct hostname is visible in Atlas → Database → Connect → Drivers.
+
+### CORS error in browser
+
+- Make sure you're accessing the site via `http://localhost:3000` (not opening `index.html` directly as `file:///...`).
+- The dev server serves frontend and API from the same port, eliminating CORS.
+- On Vercel, everything is same-origin so CORS isn't an issue in production.
+
 ### Signup says "Account already exists" but you just created the DB
 
 - The email check is case-insensitive. Try with a different email.
@@ -339,9 +415,8 @@ This avoids the overhead of reconnecting to MongoDB on every single request.
 
 ### Local dev server not finding API routes
 
-- Make sure you're using `vercel dev` (not `node server.js`).
-- Install Vercel CLI: `npm install -g vercel`
-- On first run, follow the prompts to link your project.
+- Make sure you're running `npm run dev` (uses `dev-server.js`).
+- Make sure `npm install` was run to install dependencies.
 
 ---
 
