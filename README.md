@@ -108,12 +108,12 @@ Follow these steps to create your free cloud database:
 2. Choose **"Drivers"** (Node.js).
 3. Copy the connection string. It looks like:
    ```
-   mongodb+srv://admin:<password>@sgp-cluster.abc123.mongodb.net/?retryWrites=true&w=majority
+   mongodb+srv://<username>:<password>@<cluster-hostname>/?retryWrites=true&w=majority
    ```
-4. Replace `<password>` with the password you set in Step 2.
+4. Replace `<username>` and `<password>` with the credentials you set in Step 2.
 5. Add a database name after the `/` (e.g., `sgp-website`):
    ```
-   mongodb+srv://admin:YOUR_PASSWORD@sgp-cluster.abc123.mongodb.net/sgp-website?retryWrites=true&w=majority
+   mongodb+srv://<username>:<password>@<cluster-hostname>/sgp-website?retryWrites=true&w=majority
    ```
 
 This is your `MONGODB_URI`.
@@ -139,7 +139,7 @@ cp .env.example .env
 Open `.env` and paste your MongoDB Atlas connection string:
 
 ```
-MONGODB_URI=mongodb+srv://admin:YOUR_PASSWORD@sgp-cluster.abc123.mongodb.net/sgp-website?retryWrites=true&w=majority
+MONGODB_URI=mongodb+srv://<username>:<password>@<cluster-hostname>/sgp-website?retryWrites=true&w=majority
 ```
 
 ### Step 3: Run the Local Dev Server
@@ -180,7 +180,7 @@ git push -u origin main
 
    | Key          | Value                                                                 |
    |--------------|-----------------------------------------------------------------------|
-   | `MONGODB_URI` | `mongodb+srv://admin:YOUR_PASSWORD@sgp-cluster.abc123.mongodb.net/sgp-website?retryWrites=true&w=majority` |
+   | `MONGODB_URI` | Your Atlas connection string (from Step 4 of MongoDB Atlas Setup above) |
 
 5. Click **"Deploy"**.
 
