@@ -85,7 +85,7 @@ Follow these steps to create your free cloud database:
 
 1. In the **Security → Database Access** section, click **"Add New Database User"**.
 2. Choose **Password** authentication.
-3. Set a username (e.g., `sgp-admin`) and a strong password.
+3. Set a username (e.g., `admin`) and a strong password.
 4. Under "Database User Privileges", select **"Read and write to any database"**.
 5. Click **"Add User"**.
 
@@ -105,12 +105,12 @@ Follow these steps to create your free cloud database:
 2. Choose **"Drivers"** (Node.js).
 3. Copy the connection string. It looks like:
    ```
-   mongodb+srv://sgp-admin:<password>@sgp-cluster.abc123.mongodb.net/?retryWrites=true&w=majority
+   mongodb+srv://admin:<password>@sgp-cluster.abc123.mongodb.net/?retryWrites=true&w=majority
    ```
 4. Replace `<password>` with the password you set in Step 2.
 5. Add a database name after the `/` (e.g., `sgp-website`):
    ```
-   mongodb+srv://sgp-admin:YOUR_PASSWORD@sgp-cluster.abc123.mongodb.net/sgp-website?retryWrites=true&w=majority
+   mongodb+srv://admin:YOUR_PASSWORD@sgp-cluster.abc123.mongodb.net/{name}?retryWrites=true&w=majority
    ```
 
 This is your `MONGODB_URI`.
@@ -122,7 +122,7 @@ This is your `MONGODB_URI`.
 ### Step 1: Clone and Install
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/SGP-WEBSITE.git
+git clone https://github.com/sambitos23/SGP-WEBSITE.git
 cd SGP-WEBSITE
 npm install
 ```
@@ -136,7 +136,7 @@ cp .env.example .env
 Open `.env` and paste your MongoDB Atlas connection string:
 
 ```
-MONGODB_URI=mongodb+srv://sgp-admin:YOUR_PASSWORD@sgp-cluster.abc123.mongodb.net/sgp-website?retryWrites=true&w=majority
+MONGODB_URI=mongodb+srv://admin:YOUR_PASSWORD@sgp-cluster.abc123.mongodb.net/{name}?retryWrites=true&w=majority
 ```
 
 ### Step 3: Run Locally with Vercel CLI
@@ -177,7 +177,7 @@ git push -u origin main
 
    | Key          | Value                                                                 |
    |--------------|-----------------------------------------------------------------------|
-   | `MONGODB_URI` | `mongodb+srv://sgp-admin:YOUR_PASSWORD@sgp-cluster.abc123.mongodb.net/sgp-website?retryWrites=true&w=majority` |
+   | `MONGODB_URI` | `mongodb+srv://admin:YOUR_PASSWORD@sgp-cluster.abc123.mongodb.net/{name}?retryWrites=true&w=majority` |
 
 5. Click **"Deploy"**.
 
