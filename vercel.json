@@ -1,0 +1,42 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "api/**/*.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "index.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "styles.css",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "script.js",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "images/**",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "methods": ["OPTIONS"],
+      "headers": {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type"
+      },
+      "dest": "/api/$1"
+    },
+    { "src": "/api/(.*)", "dest": "/api/$1" },
+    { "src": "/images/(.*)", "dest": "/images/$1" },
+    { "src": "/styles.css", "dest": "/styles.css" },
+    { "src": "/script.js", "dest": "/script.js" },
+    { "src": "/(.*)", "dest": "/index.html" }
+  ]
+}
