@@ -1,5 +1,7 @@
 {
   "version": 2,
+  "buildCommand": "",
+  "outputDirectory": ".",
   "rewrites": [
     { "source": "/api/signup", "destination": "/api/signup" },
     { "source": "/api/login", "destination": "/api/login" },
